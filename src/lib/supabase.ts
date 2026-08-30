@@ -7,7 +7,7 @@ let client: SupabaseClient | null = null;
 
 if (!url || !anonKey) {
   console.error(
-    '[Cabine de Change] Missing Supabase configuration. ' +
+    '[Singularité] Missing Supabase configuration. ' +
       'Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are defined in your .env file.'
   );
 } else {

@@ -1,6 +1,7 @@
 import { Moon, Sun, TrendingUp, UserCircle2 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { SITE_NAME } from '@/lib/constants';
 
 interface HeaderProps {
   onAccountClick: () => void;
@@ -19,7 +20,7 @@ export function Header({ onAccountClick, isLoggedIn }: HeaderProps) {
           </div>
           <div>
             <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white sm:text-lg">
-              Cabine de Change
+              {SITE_NAME}
             </h1>
             <p className="flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-success-500 animate-pulse-slow" />

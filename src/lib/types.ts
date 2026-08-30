@@ -50,4 +50,6 @@ export interface BureauWithRate extends Bureau {
 }
 
 export type RateMode = 'buy' | 'sell';
-export type Currency = 'USD' | 'CDF' | 'EUR' | 'ZAR';
+export type Currency =
+  | 'USD' | 'CDF' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'CHF' | 'CNY'
+  | 'AED' | 'INR' | 'AUD' | 'ZAR' | 'XAF' | 'XOF' | 'RWF' | 'KES' | 'UGX';

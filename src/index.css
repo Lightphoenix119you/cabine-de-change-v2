@@ -45,3 +45,13 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Masque le badge/widget Netlify Drawer, s'il apparaît */
+#netlify-modal-drawer-button,
+iframe[src*="netlify"],
+[data-netlify-deploy-id],
+.netlify-feedback-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

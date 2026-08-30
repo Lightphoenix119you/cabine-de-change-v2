@@ -160,6 +160,16 @@ export function CurrencyConverter({ bureaus }: CurrencyConverterProps) {
           </p>
         </div>
       )}
+
+      {!(fromCurrency === 'USD' && toCurrency === 'CDF') && !(fromCurrency === 'CDF' && toCurrency === 'USD') && (
+        <div className="mt-4 flex items-start gap-2 rounded-xl bg-slate-100 p-3 dark:bg-slate-900/40">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Taux de référence approximatif, saisi manuellement — seule la paire USD/CDF utilise les
+            taux réels des cabines.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

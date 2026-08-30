@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, Lock, LogIn, Phone, X } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, Loader2, Lock, LogIn, Phone, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface AuthModalProps {
@@ -26,20 +26,49 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
+  const [welcome, setWelcome] = useState(false);
 
   if (!open) return null;
+
+  function resetFields() {
+    setPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setError('');
+    setInfo('');
+  }
+
+  function celebrateAndClose() {
+    setWelcome(true);
+    setTimeout(() => {
+      setWelcome(false);
+      resetFields();
+      setEmail('');
+      onClose();
+    }, 900);
+  }
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!supabase) return;
-    setLoading(true);
     setError('');
     setInfo('');
+
+    if (mode === 'signup' && password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas.');
+      return;
+    }
+
+    setLoading(true);
 
     if (mode === 'signin') {
       const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
@@ -48,7 +77,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         setError(friendlyError(err.message));
         return;
       }
-      onClose();
+      celebrateAndClose();
     } else {
       const { data, error: err } = await supabase.auth.signUp({ email: email.trim(), password });
       setLoading(false);
@@ -57,10 +86,17 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         return;
       }
       if (data.session) {
-        onClose();
+        // "Confirm email" is disabled server-side — signUp already returns a
+        // live session, so the person is genuinely logged in right now.
+        celebrateAndClose();
       } else {
-        setInfo('Compte créé. Vérifiez votre email pour confirmer, puis connectez-vous.');
+        // Supabase still requires email confirmation for this project — no
+        // client-side trick can create a valid session without it. Keep a
+        // short explanation instead of silently closing on nothing.
+        setInfo("Compte créé. Un email de confirmation a été envoyé — cliquez le lien reçu, puis connectez-vous.");
         setMode('signin');
+        setPassword('');
+        setConfirmPassword('');
       }
     }
   }
@@ -104,11 +140,24 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       setError(friendlyError(err.message));
       return;
     }
-    onClose();
+    celebrateAndClose();
   }
 
   const inputClass =
     'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-primary-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white';
+
+  if (welcome) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+        <div className="relative z-10 flex flex-col items-center gap-3 rounded-3xl bg-white px-8 py-10 text-center shadow-2xl dark:bg-slate-900">
+          <CheckCircle2 className="h-12 w-12 text-success-500" />
+          <p className="text-base font-bold text-slate-900 dark:text-white">Bienvenue !</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Vous êtes connecté.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -144,18 +193,57 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   className={inputClass}
                 />
               </div>
+
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">Mot de passe</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                  className={inputClass}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                    className={`${inputClass} pr-10`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
+
+              {mode === 'signup' && (
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Confirmer le mot de passe
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      minLength={6}
+                      className={`${inputClass} pr-10`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      aria-label={showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {error && (
                 <div className="rounded-xl bg-error-50 p-3 text-sm text-error-700 dark:bg-error-950/30 dark:text-error-300">
                   {error}
@@ -166,6 +254,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   {info}
                 </div>
               )}
+
               <button
                 type="submit"
                 disabled={loading}
@@ -213,8 +302,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             <button
               onClick={() => {
                 setMode((m) => (m === 'signin' ? 'signup' : 'signin'));
-                setError('');
-                setInfo('');
+                resetFields();
               }}
               className="w-full text-center text-xs font-medium text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400"
             >
