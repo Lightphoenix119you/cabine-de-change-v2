@@ -23,11 +23,21 @@ export function LocationPicker({ latitude, longitude, onChange }: LocationPicker
         onChange(pos.coords.latitude.toFixed(6), pos.coords.longitude.toFixed(6));
         setLocating(false);
       },
-      () => {
-        setError('Position refusée ou indisponible.');
+      (err) => {
         setLocating(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setError(
+            "Permission de localisation refusée. Autorisez l'accès à la position dans les réglages de votre navigateur, ou saisissez les coordonnées manuellement."
+          );
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setError('Position indisponible — vérifiez que le GPS est activé sur votre appareil.');
+        } else if (err.code === err.TIMEOUT) {
+          setError('La localisation a pris trop de temps. Réessayez, ou saisissez les coordonnées manuellement.');
+        } else {
+          setError('Position refusée ou indisponible.');
+        }
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
     );
   }
 

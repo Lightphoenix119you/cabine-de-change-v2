@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { LocalVendor } from '@/lib/types';
 import { LocationPicker } from './LocationPicker';
+import { ImageUpload } from './ImageUpload';
 
 interface LocalVendorFormProps {
   bureauId: string;
@@ -122,10 +123,7 @@ export function LocalVendorForm({
         />
       </label>
 
-      <label className="block space-y-1">
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Photo (URL)</span>
-        <input value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://…" className={inputClass} />
-      </label>
+      <ImageUpload value={photoUrl} onChange={setPhotoUrl} folder="local-vendors" />
 
       <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
         <LocationPicker

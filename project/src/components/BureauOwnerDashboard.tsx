@@ -3,6 +3,7 @@ import { Loader2, Plus, Save, Store } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { MUNICIPALITIES } from '@/lib/constants';
 import { LocationPicker } from './LocationPicker';
+import { ImageUpload } from './ImageUpload';
 import { LocalVendorForm } from './LocalVendorForm';
 import { LocalVendorCard } from './LocalVendorCard';
 import { useLocalVendors } from '@/hooks/useLocalVendors';
@@ -24,6 +25,7 @@ function CreateBureauForm({ userId, onCreated }: CreateBureauFormProps) {
   const [phone, setPhone] = useState('');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +43,7 @@ function CreateBureauForm({ userId, onCreated }: CreateBureauFormProps) {
       longitude: longitude.trim() ? parseFloat(longitude) : null,
       user_id: userId,
       verified: false,
+      logo_url: logoUrl.trim() || null,
     });
     setSaving(false);
     if (err) {
@@ -86,6 +89,8 @@ function CreateBureauForm({ userId, onCreated }: CreateBureauFormProps) {
           className={inputClass}
         />
       </label>
+
+      <ImageUpload value={logoUrl} onChange={setLogoUrl} folder="bureaus" />
 
       <label className="block space-y-1">
         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Téléphone</span>

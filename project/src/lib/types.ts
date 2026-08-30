@@ -9,6 +9,7 @@ export interface Bureau {
   longitude: number | null;
   verified: boolean;
   user_id: string | null;
+  logo_url: string | null;
   created_at: string;
 }
 

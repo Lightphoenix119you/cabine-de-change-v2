@@ -29,7 +29,14 @@ export function BureauProfile({ bureau, onClose }: BureauProfileProps) {
       <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl dark:bg-slate-900 sm:rounded-3xl">
         <div className="sticky top-0 z-10 border-b border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-start justify-between gap-3 p-4">
-            <div className="min-w-0">
+            {bureau.logo_url && (
+              <img
+                src={bureau.logo_url}
+                alt=""
+                className="h-12 w-12 shrink-0 rounded-xl border border-slate-200 object-cover dark:border-slate-700"
+              />
+            )}
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <h2 className="truncate text-base font-bold text-slate-900 dark:text-white">{bureau.name}</h2>
                 {bureau.verified && <BadgeCheck className="h-4 w-4 shrink-0 text-primary-500" />}
