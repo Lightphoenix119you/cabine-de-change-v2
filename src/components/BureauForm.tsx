@@ -50,7 +50,13 @@ export function BureauForm({ userId, existing, onDone, onCancel }: BureauFormPro
 
     setSaving(false);
     if (err) {
-      setError('Enregistrement impossible — reconnectez-vous et réessayez.');
+      console.error('[BureauForm] Échec de la sauvegarde:', err);
+      const missingColumn = /column .* does not exist/i.test(err.message);
+      setError(
+        missingColumn
+          ? `${err.message} — une migration récente (colonnes manquantes sur "bureaus") n'a probablement pas été exécutée.`
+          : `${err.message}${err.code ? ` (code ${err.code})` : ''}`
+      );
       return;
     }
     onDone();
