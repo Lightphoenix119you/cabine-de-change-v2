@@ -17,6 +17,7 @@ import { CommunityReportModal } from '@/components/CommunityReportModal';
 import { AuthModal } from '@/components/AuthModal';
 import { AccountPanel } from '@/components/AccountPanel';
 import { BureauProfile } from '@/components/BureauProfile';
+import { BureauEditModal } from '@/components/BureauEditModal';
 import type { BureauWithRate } from '@/lib/types';
 
 function AppContent() {
@@ -25,6 +26,7 @@ function AppContent() {
   const [authOpen, setAuthOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [selectedBureau, setSelectedBureau] = useState<BureauWithRate | null>(null);
+  const [editingBureau, setEditingBureau] = useState<BureauWithRate | null>(null);
 
   const auth = useAuth();
   const { coords, status: geoStatus, request: requestGeo } = useGeolocation();
@@ -183,7 +185,13 @@ function AppContent() {
                     }
                   />
                 ) : (
-                  <RatesDashboard bureaus={bureaus} loading={loading} onSelectBureau={setSelectedBureau} />
+                  <RatesDashboard
+                    bureaus={bureaus}
+                    loading={loading}
+                    onSelectBureau={setSelectedBureau}
+                    currentUserId={auth.session?.user.id ?? null}
+                    onEditBureau={setEditingBureau}
+                  />
                 )}
               </div>
             </div>
@@ -193,7 +201,13 @@ function AppContent() {
         {tab === 'bureaux' && (
           <div className="animate-fade-in">
             <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Bureaux de change</h2>
-            <RatesDashboard bureaus={bureaus} loading={loading} onSelectBureau={setSelectedBureau} />
+            <RatesDashboard
+                    bureaus={bureaus}
+                    loading={loading}
+                    onSelectBureau={setSelectedBureau}
+                    currentUserId={auth.session?.user.id ?? null}
+                    onEditBureau={setEditingBureau}
+                  />
           </div>
         )}
 
@@ -208,6 +222,8 @@ function AppContent() {
               geoStatus={geoStatus}
               onLocate={requestGeo}
               onSelectBureau={setSelectedBureau}
+              currentUserId={auth.session?.user.id ?? null}
+              onEditBureau={setEditingBureau}
             />
           </div>
         )}
@@ -244,7 +260,24 @@ function AppContent() {
         />
       )}
 
-      <BureauProfile bureau={selectedBureau} onClose={() => setSelectedBureau(null)} />
+      <BureauProfile
+        bureau={selectedBureau}
+        onClose={() => setSelectedBureau(null)}
+        currentUserId={auth.session?.user.id ?? null}
+        onEdit={(b) => {
+          setSelectedBureau(null);
+          setEditingBureau(b);
+        }}
+      />
+
+      {auth.session && (
+        <BureauEditModal
+          bureau={editingBureau}
+          userId={auth.session.user.id}
+          onClose={() => setEditingBureau(null)}
+          onSaved={refetch}
+        />
+      )}
     </div>
   );
 }

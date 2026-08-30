@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BadgeCheck, Building2, Navigation, Phone, Store, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { BadgeCheck, Building2, Navigation, Pencil, Phone, Store, TrendingDown, TrendingUp, X } from 'lucide-react';
 import type { BureauWithRate } from '@/lib/types';
 import { formatCDF } from '@/lib/format';
 import { useLocalVendors } from '@/hooks/useLocalVendors';
@@ -8,11 +8,13 @@ import { LocalVendorCard } from './LocalVendorCard';
 interface BureauProfileProps {
   bureau: BureauWithRate | null;
   onClose: () => void;
+  currentUserId?: string | null;
+  onEdit?: (bureau: BureauWithRate) => void;
 }
 
 type Tab = 'rates' | 'vendors';
 
-export function BureauProfile({ bureau, onClose }: BureauProfileProps) {
+export function BureauProfile({ bureau, onClose, currentUserId, onEdit }: BureauProfileProps) {
   const [tab, setTab] = useState<Tab>('rates');
   const { vendors, loading } = useLocalVendors(bureau?.id ?? null);
 
@@ -49,12 +51,23 @@ export function BureauProfile({ bureau, onClose }: BureauProfileProps) {
                 <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">{bureau.address_description}</p>
               )}
             </div>
-            <button
-              onClick={onClose}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <div className="flex shrink-0 items-center gap-1">
+              {currentUserId != null && bureau.user_id === currentUserId && onEdit && (
+                <button
+                  onClick={() => onEdit(bureau)}
+                  aria-label="Modifier ma cabine"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-primary-600 dark:hover:bg-slate-800 dark:hover:text-primary-400"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           <div className={`mx-4 mb-3 grid gap-2 ${bureau.phone && directionsUrl ? 'grid-cols-2' : 'grid-cols-1'}`}>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Building2, LocateFixed, MapPin, Navigation, Phone, Star } from 'lucide-react';
+import { Building2, LocateFixed, MapPin, Navigation, Pencil, Phone, Star } from 'lucide-react';
 import type { BureauWithRate, LocalVendor } from '@/lib/types';
 import { formatCDF, formatDistance } from '@/lib/format';
 import { EmptyState } from './EmptyState';
@@ -13,6 +13,8 @@ interface BureauDirectoryProps {
   geoStatus: 'idle' | 'requested' | 'granted' | 'denied';
   onLocate: () => void;
   onSelectBureau: (bureau: BureauWithRate) => void;
+  currentUserId?: string | null;
+  onEditBureau?: (bureau: BureauWithRate) => void;
 }
 
 type ProximityFilter = 'all' | 500 | 1000 | 5000;
@@ -32,6 +34,8 @@ export function BureauDirectory({
   geoStatus,
   onLocate,
   onSelectBureau,
+  currentUserId,
+  onEditBureau,
 }: BureauDirectoryProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [proximity, setProximity] = useState<ProximityFilter>('all');
@@ -142,6 +146,18 @@ export function BureauDirectory({
                   <div className="flex items-center gap-1.5">
                     <h3 className="truncate text-sm font-bold text-slate-900 dark:text-white">{b.name}</h3>
                     {b.verified && <Star className="h-3.5 w-3.5 fill-primary-500 text-primary-500" />}
+                    {currentUserId != null && b.user_id === currentUserId && onEditBureau && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditBureau(b);
+                        }}
+                        aria-label="Modifier ma cabine"
+                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-primary-600 dark:hover:bg-slate-700 dark:hover:text-primary-400"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
                   <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                     <Building2 className="h-3 w-3" />

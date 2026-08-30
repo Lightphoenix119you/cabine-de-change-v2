@@ -6,6 +6,7 @@ import {
   Clock,
   Minus,
   Navigation,
+  Pencil,
   Phone,
   ShieldAlert,
   Star,
@@ -18,6 +19,8 @@ interface BureauCardProps {
   previousRate?: { usd_buy: number | null; usd_sell: number | null } | null;
   variant?: 'list' | 'compact';
   onSelect?: (bureau: BureauWithRate) => void;
+  currentUserId?: string | null;
+  onEdit?: (bureau: BureauWithRate) => void;
 }
 
 type Trend = 'up' | 'down' | 'stable' | 'unknown';
@@ -42,9 +45,17 @@ function TrendIcon({ trend }: { trend: Trend }) {
   return <span className="text-[10px] text-slate-400">—</span>;
 }
 
-export function BureauCard({ bureau, previousRate, variant = 'list', onSelect }: BureauCardProps) {
+export function BureauCard({
+  bureau,
+  previousRate,
+  variant = 'list',
+  onSelect,
+  currentUserId,
+  onEdit,
+}: BureauCardProps) {
   const latest = bureau.latest;
   const isVerified = latest?.status === 'verified';
+  const isOwner = currentUserId != null && bureau.user_id === currentUserId;
 
   const buyTrend = getTrend(latest?.usd_buy, previousRate?.usd_buy);
   const sellTrend = getTrend(latest?.usd_sell, previousRate?.usd_sell);
@@ -81,18 +92,32 @@ export function BureauCard({ bureau, previousRate, variant = 'list', onSelect }:
           </p>
         </div>
 
-        {/* Verification badge */}
-        {latest && (
-          <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-              isVerified
-                ? 'bg-success-100 text-success-700 dark:bg-success-900/40 dark:text-success-300'
-                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-            }`}
-          >
-            {isVerified ? 'Vérifié' : 'Non vérifié'}
-          </span>
-        )}
+        {/* Verification badge + edit */}
+        <div className="flex shrink-0 items-center gap-1.5">
+          {latest && (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                isVerified
+                  ? 'bg-success-100 text-success-700 dark:bg-success-900/40 dark:text-success-300'
+                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+              }`}
+            >
+              {isVerified ? 'Vérifié' : 'Non vérifié'}
+            </span>
+          )}
+          {isOwner && onEdit && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(bureau);
+              }}
+              aria-label="Modifier ma cabine"
+              className="flex h-6 w-6 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-primary-600 dark:hover:bg-slate-700 dark:hover:text-primary-400"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Rates */}
@@ -162,13 +187,33 @@ export function BureauCard({ bureau, previousRate, variant = 'list', onSelect }:
   );
 }
 
-export function UnverifiedReportCard({ bureau }: { bureau: BureauWithRate }) {
+export function UnverifiedReportCard({
+  bureau,
+  currentUserId,
+  onEdit,
+}: {
+  bureau: BureauWithRate;
+  currentUserId?: string | null;
+  onEdit?: (bureau: BureauWithRate) => void;
+}) {
+  const isOwner = currentUserId != null && bureau.user_id === currentUserId;
   const latest = bureau.latest;
   return (
     <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-3 dark:border-amber-800/40 dark:bg-amber-950/20">
-      <div className="flex items-center gap-1.5">
-        <ShieldAlert className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-        <span className="text-xs font-semibold text-amber-800 dark:text-amber-300">Signalé par la communauté, non vérifié</span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <ShieldAlert className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+          <span className="text-xs font-semibold text-amber-800 dark:text-amber-300">Signalé par la communauté, non vérifié</span>
+        </div>
+        {isOwner && onEdit && (
+          <button
+            onClick={() => onEdit(bureau)}
+            aria-label="Modifier ma cabine"
+            className="flex h-6 w-6 items-center justify-center rounded-lg text-amber-500 transition hover:bg-amber-100 dark:hover:bg-amber-900/40"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
       <div className="mt-1.5 flex items-center justify-between">
         <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{bureau.name} · {bureau.municipality}</span>

@@ -9,9 +9,17 @@ interface RatesDashboardProps {
   bureaus: BureauWithRate[];
   loading: boolean;
   onSelectBureau: (bureau: BureauWithRate) => void;
+  currentUserId?: string | null;
+  onEditBureau?: (bureau: BureauWithRate) => void;
 }
 
-export function RatesDashboard({ bureaus, loading, onSelectBureau }: RatesDashboardProps) {
+export function RatesDashboard({
+  bureaus,
+  loading,
+  onSelectBureau,
+  currentUserId,
+  onEditBureau,
+}: RatesDashboardProps) {
   const [search, setSearch] = useState('');
   const [municipality, setMunicipality] = useState<string>('all');
   const [rateFilter, setRateFilter] = useState<'all' | 'verified' | 'unverified'>('all');
@@ -157,7 +165,7 @@ export function RatesDashboard({ bureaus, loading, onSelectBureau }: RatesDashbo
           </h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {verifiedList.map((b) => (
-              <BureauCard key={b.id} bureau={b} onSelect={onSelectBureau} />
+              <BureauCard key={b.id} bureau={b} onSelect={onSelectBureau} currentUserId={currentUserId} onEdit={onEditBureau} />
             ))}
           </div>
         </div>
@@ -175,7 +183,12 @@ export function RatesDashboard({ bureaus, loading, onSelectBureau }: RatesDashbo
           </div>
           <div className="space-y-2">
             {unverifiedList.map((b) => (
-              <UnverifiedReportCard key={b.id} bureau={b} />
+              <UnverifiedReportCard
+                key={b.id}
+                bureau={b}
+                currentUserId={currentUserId}
+                onEdit={onEditBureau}
+              />
             ))}
           </div>
         </div>
@@ -190,7 +203,7 @@ export function RatesDashboard({ bureaus, loading, onSelectBureau }: RatesDashbo
           </h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {noRateList.map((b) => (
-              <BureauCard key={b.id} bureau={b} onSelect={onSelectBureau} />
+              <BureauCard key={b.id} bureau={b} onSelect={onSelectBureau} currentUserId={currentUserId} onEdit={onEditBureau} />
             ))}
           </div>
         </div>

@@ -1,126 +1,14 @@
 import { useState } from 'react';
-import { Loader2, Plus, Save, Store } from 'lucide-react';
+import { Save, Store, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { MUNICIPALITIES } from '@/lib/constants';
-import { LocationPicker } from './LocationPicker';
-import { ImageUpload } from './ImageUpload';
 import { LocalVendorForm } from './LocalVendorForm';
 import { LocalVendorCard } from './LocalVendorCard';
+import { BureauForm } from './BureauForm';
 import { useLocalVendors } from '@/hooks/useLocalVendors';
 import type { BureauWithRate } from '@/lib/types';
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-primary-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white';
-
-interface CreateBureauFormProps {
-  userId: string;
-  onCreated: () => void;
-}
-
-function CreateBureauForm({ userId, onCreated }: CreateBureauFormProps) {
-  const [name, setName] = useState('');
-  const [municipality, setMunicipality] = useState(MUNICIPALITIES[0]);
-  const [address, setAddress] = useState('');
-  const [addressDescription, setAddressDescription] = useState('');
-  const [phone, setPhone] = useState('');
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
-  const [logoUrl, setLogoUrl] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleCreate() {
-    if (!supabase || !name.trim()) return;
-    setSaving(true);
-    setError(null);
-    const { error: err } = await supabase.from('bureaus').insert({
-      name: name.trim(),
-      municipality,
-      address: address.trim() || null,
-      address_description: addressDescription.trim() || null,
-      phone: phone.trim() || null,
-      latitude: latitude.trim() ? parseFloat(latitude) : null,
-      longitude: longitude.trim() ? parseFloat(longitude) : null,
-      user_id: userId,
-      verified: false,
-      logo_url: logoUrl.trim() || null,
-    });
-    setSaving(false);
-    if (err) {
-      setError('Création impossible — reconnectez-vous et réessayez.');
-      return;
-    }
-    onCreated();
-  }
-
-  return (
-    <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800/60">
-      <h3 className="text-sm font-bold text-slate-900 dark:text-white">Créer ma cabine de change</h3>
-      <p className="text-xs text-slate-500 dark:text-slate-400">
-        Votre cabine sera visible immédiatement, marquée "non vérifiée" jusqu'à validation par un
-        administrateur.
-      </p>
-
-      <label className="block space-y-1">
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Nom de la cabine *</span>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Cabine Centrale" className={inputClass} />
-      </label>
-
-      <label className="block space-y-1">
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Commune *</span>
-        <select value={municipality} onChange={(e) => setMunicipality(e.target.value)} className={inputClass}>
-          {MUNICIPALITIES.map((m) => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </select>
-      </label>
-
-      <label className="block space-y-1">
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Adresse</span>
-        <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Avenue du Marché" className={inputClass} />
-      </label>
-
-      <label className="block space-y-1">
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Repère / description du lieu</span>
-        <input
-          value={addressDescription}
-          onChange={(e) => setAddressDescription(e.target.value)}
-          placeholder="En face de la pharmacie, à côté du rond-point"
-          className={inputClass}
-        />
-      </label>
-
-      <ImageUpload value={logoUrl} onChange={setLogoUrl} folder="bureaus" />
-
-      <label className="block space-y-1">
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Téléphone</span>
-        <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+243…" className={inputClass} />
-      </label>
-
-      <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
-        <LocationPicker
-          latitude={latitude}
-          longitude={longitude}
-          onChange={(lat, lng) => {
-            setLatitude(lat);
-            setLongitude(lng);
-          }}
-        />
-      </div>
-
-      {error && <p className="text-xs text-error-500">{error}</p>}
-
-      <button
-        onClick={handleCreate}
-        disabled={saving || !name.trim()}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 py-3 text-sm font-bold text-white transition hover:bg-primary-700 disabled:opacity-60"
-      >
-        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-        Créer ma cabine
-      </button>
-    </div>
-  );
-}
 
 function RatesEditor({ bureau, onSaved }: { bureau: BureauWithRate; onSaved: () => void }) {
   const [buy, setBuy] = useState(bureau.latest?.usd_buy != null ? String(bureau.latest.usd_buy) : '');
@@ -304,9 +192,9 @@ export function BureauOwnerDashboard({ userId, ownedBureaus, onChanged }: Bureau
       )}
 
       {creating || !active ? (
-        <CreateBureauForm
+        <BureauForm
           userId={userId}
-          onCreated={() => {
+          onDone={() => {
             setCreating(false);
             onChanged();
           }}
