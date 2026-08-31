@@ -73,23 +73,32 @@ export function BureauCard({
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <h3 className="truncate text-sm font-bold text-slate-900 dark:text-white">{bureau.name}</h3>
-            {bureau.verified && (
-              <BadgeCheck className="h-4 w-4 shrink-0 text-primary-500" />
-            )}
-          </div>
-          <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-            <Building2 className="h-3 w-3" />
-            {bureau.municipality}
+        <div className="flex min-w-0 flex-1 items-start gap-2.5">
+          {bureau.logo_url && (
+            <img
+              src={bureau.logo_url}
+              alt=""
+              className="h-11 w-11 shrink-0 rounded-xl border border-slate-200 object-cover dark:border-slate-700"
+            />
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <h3 className="truncate text-sm font-bold text-slate-900 dark:text-white">{bureau.name}</h3>
+              {bureau.verified && (
+                <BadgeCheck className="h-4 w-4 shrink-0 text-primary-500" />
+              )}
+            </div>
+            <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+              <Building2 className="h-3 w-3" />
+              {bureau.municipality}
             {bureau.distanceKm != null && (
               <span className="ml-1 inline-flex items-center gap-0.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                 <Navigation className="h-2.5 w-2.5" />
                 {formatDistance(bureau.distanceKm)}
               </span>
             )}
-          </p>
+            </p>
+          </div>
         </div>
 
         {/* Verification badge + edit */}

@@ -1,6 +1,6 @@
-import { Home, MapPin, Building2, Megaphone } from 'lucide-react';
+import { Home, MapPin, Building2, FileText } from 'lucide-react';
 
-export type Tab = 'accueil' | 'bureaux' | 'carte' | 'signaler';
+export type Tab = 'accueil' | 'bureaux' | 'carte' | 'notes';
 
 interface BottomNavProps {
   active: Tab;
@@ -11,7 +11,7 @@ const TABS: { key: Tab; label: string; icon: typeof Home }[] = [
   { key: 'accueil', label: 'Accueil', icon: Home },
   { key: 'bureaux', label: 'Bureaux', icon: Building2 },
   { key: 'carte', label: 'Carte', icon: MapPin },
-  { key: 'signaler', label: 'Signaler', icon: Megaphone },
+  { key: 'notes', label: 'Notes', icon: FileText },
 ];
 
 export function BottomNav({ active, onChange }: BottomNavProps) {

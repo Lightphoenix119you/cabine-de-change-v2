@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Building2, Filter, Search, ShieldAlert } from 'lucide-react';
+import { Building2, Filter, Image as ImageIcon, Search, ShieldAlert } from 'lucide-react';
 import type { BureauWithRate } from '@/lib/types';
 import { MUNICIPALITIES } from '@/lib/constants';
 import { BureauCard, UnverifiedReportCard } from './BureauCard';
@@ -24,6 +24,7 @@ export function RatesDashboard({
   const [municipality, setMunicipality] = useState<string>('all');
   const [rateFilter, setRateFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'best' | 'proximity'>('recent');
+  const [photoOnly, setPhotoOnly] = useState(false);
 
   const filtered = useMemo(() => {
     let list = [...bureaus];
@@ -48,6 +49,10 @@ export function RatesDashboard({
       list = list.filter((b) => b.latest?.status === 'pending');
     }
 
+    if (photoOnly) {
+      list = list.filter((b) => !!b.logo_url);
+    }
+
     switch (sortBy) {
       case 'best':
         list.sort((a, b) => (b.latest?.usd_sell ?? 0) - (a.latest?.usd_sell ?? 0));
@@ -64,7 +69,7 @@ export function RatesDashboard({
     }
 
     return list;
-  }, [bureaus, search, municipality, rateFilter, sortBy]);
+  }, [bureaus, search, municipality, rateFilter, sortBy, photoOnly]);
 
   const verifiedList = filtered.filter((b) => b.latest?.status === 'verified');
   const unverifiedList = filtered.filter((b) => b.latest?.status === 'pending');
@@ -141,17 +146,30 @@ export function RatesDashboard({
               </button>
             ))}
           </div>
-          <div className="ml-auto inline-flex items-center gap-1.5">
-            <Filter className="h-3.5 w-3.5 text-slate-400" />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => setPhotoOnly((v) => !v)}
+              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                photoOnly
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300'
+                  : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+              }`}
             >
-              <option value="recent">Récents</option>
-              <option value="best">Meilleur taux</option>
-              <option value="proximity">Plus proches</option>
-            </select>
+              <ImageIcon className="h-3.5 w-3.5" />
+              Avec photo
+            </button>
+            <div className="inline-flex items-center gap-1.5">
+              <Filter className="h-3.5 w-3.5 text-slate-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              >
+                <option value="recent">Récents</option>
+                <option value="best">Meilleur taux</option>
+                <option value="proximity">Plus proches</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>

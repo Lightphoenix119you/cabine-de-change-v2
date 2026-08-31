@@ -50,6 +50,14 @@ export interface BureauWithRate extends Bureau {
   distanceKm?: number | null;
 }
 
+export interface Announcement {
+  id: string;
+  title: string;
+  body: string;
+  author_name: string;
+  created_at: string;
+}
+
 export type RateMode = 'buy' | 'sell';
 export type Currency =
   | 'USD' | 'CDF' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'CHF' | 'CNY'

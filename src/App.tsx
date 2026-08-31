@@ -5,6 +5,8 @@ import { isSupabaseConfigured } from '@/lib/supabase';
 import { useBureaus, useGeolocation } from '@/hooks/useBureaus';
 import { useAllLocalVendors } from '@/hooks/useLocalVendors';
 import { useAuth } from '@/hooks/useAuth';
+import { useFirstVisit } from '@/hooks/useFirstVisit';
+import { TUTORIALS } from '@/lib/tutorialContent';
 import { formatCDF } from '@/lib/format';
 import { Header } from '@/components/Header';
 import { BottomNav, type Tab } from '@/components/BottomNav';
@@ -18,6 +20,8 @@ import { AuthModal } from '@/components/AuthModal';
 import { AccountPanel } from '@/components/AccountPanel';
 import { BureauProfile } from '@/components/BureauProfile';
 import { BureauEditModal } from '@/components/BureauEditModal';
+import { NotesTab } from '@/components/NotesTab';
+import { TutorialModal } from '@/components/TutorialModal';
 import type { BureauWithRate } from '@/lib/types';
 
 function AppContent() {
@@ -27,6 +31,7 @@ function AppContent() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [selectedBureau, setSelectedBureau] = useState<BureauWithRate | null>(null);
   const [editingBureau, setEditingBureau] = useState<BureauWithRate | null>(null);
+  const [signalerTutorialOpen, setSignalerTutorialOpen] = useState(false);
 
   const auth = useAuth();
   const { coords, status: geoStatus, request: requestGeo } = useGeolocation();
@@ -35,6 +40,13 @@ function AppContent() {
     userLng: coords?.lng,
   });
   const { vendors: allVendors } = useAllLocalVendors();
+
+  // Onboarding contextualisé — un flag localStorage indépendant par contexte
+  const tutoAccueil = useFirstVisit('accueil');
+  const tutoBureaux = useFirstVisit('bureaux');
+  const tutoCarte = useFirstVisit('carte');
+  const tutoNotes = useFirstVisit('notes');
+  const tutoSignaler = useFirstVisit('signaler');
 
   const ownedBureaus = useMemo(
     () => bureaus.filter((b) => auth.ownedBureauIds.includes(b.id)),
@@ -65,13 +77,17 @@ function AppContent() {
     };
   }, [bureaus]);
 
-  const handleTabChange = (newTab: Tab) => {
-    if (newTab === 'signaler') {
-      setReportOpen(true);
+  function handleTabChange(newTab: Tab) {
+    setTab(newTab);
+  }
+
+  function handleReportClick() {
+    if (tutoSignaler.show) {
+      setSignalerTutorialOpen(true);
     } else {
-      setTab(newTab);
+      setReportOpen(true);
     }
-  };
+  }
 
   function handleAccountClick() {
     if (auth.session) {
@@ -85,6 +101,17 @@ function AppContent() {
     refetch();
     auth.refreshOwnedBureaus();
   }
+
+  const activeTutorial =
+    tab === 'accueil' && tutoAccueil.show
+      ? tutoAccueil
+      : tab === 'bureaux' && tutoBureaux.show
+        ? tutoBureaux
+        : tab === 'carte' && tutoCarte.show
+          ? tutoCarte
+          : tab === 'notes' && tutoNotes.show
+            ? tutoNotes
+            : null;
 
   if (!isSupabaseConfigured) {
     return (
@@ -125,7 +152,7 @@ function AppContent() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-3 gap-3">
               <StatCard
                 label="Bureaux actifs"
                 value={stats.totalBureaus}
@@ -146,13 +173,6 @@ function AppContent() {
                 sublabel="FC pour 1 USD"
                 icon={<TrendingDown className="h-5 w-5" />}
                 accent="accent"
-              />
-              <StatCard
-                label="Signaler"
-                value="Contribuer"
-                sublabel="Ajouter un taux"
-                icon={<Megaphone className="h-5 w-5" />}
-                accent="warning"
               />
             </div>
 
@@ -176,7 +196,7 @@ function AppContent() {
                     message="Soyez le premier à signaler un bureau de change ou un taux à Kinshasa."
                     action={
                       <button
-                        onClick={() => setReportOpen(true)}
+                        onClick={handleReportClick}
                         className="flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700"
                       >
                         <Megaphone className="h-4 w-4" />
@@ -202,12 +222,12 @@ function AppContent() {
           <div className="animate-fade-in">
             <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Bureaux de change</h2>
             <RatesDashboard
-                    bureaus={bureaus}
-                    loading={loading}
-                    onSelectBureau={setSelectedBureau}
-                    currentUserId={auth.session?.user.id ?? null}
-                    onEditBureau={setEditingBureau}
-                  />
+              bureaus={bureaus}
+              loading={loading}
+              onSelectBureau={setSelectedBureau}
+              currentUserId={auth.session?.user.id ?? null}
+              onEditBureau={setEditingBureau}
+            />
           </div>
         )}
 
@@ -227,11 +247,17 @@ function AppContent() {
             />
           </div>
         )}
+
+        {tab === 'notes' && (
+          <div className="animate-fade-in">
+            <NotesTab isAdmin={auth.isAdmin} />
+          </div>
+        )}
       </main>
 
-      {/* Floating signaller button (desktop) */}
+      {/* Point d'entrée unique pour signaler */}
       <button
-        onClick={() => setReportOpen(true)}
+        onClick={handleReportClick}
         className="fixed bottom-20 right-4 z-20 flex items-center gap-2 rounded-full bg-accent-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-accent-500/30 transition hover:bg-accent-600 sm:bottom-6 sm:right-6"
       >
         <Megaphone className="h-4 w-4" />
@@ -278,6 +304,27 @@ function AppContent() {
           onSaved={refetch}
         />
       )}
+
+      {/* Onboarding contextuel : un seul modal actif à la fois */}
+      {activeTutorial && (
+        <TutorialModal
+          open
+          content={TUTORIALS[tab]}
+          onDismiss={activeTutorial.markSeen}
+        />
+      )}
+
+      {/* Tutoriel "Signaler", déclenché au premier clic sur le bouton flottant,
+          puis ouvre directement le formulaire une fois fermé */}
+      <TutorialModal
+        open={signalerTutorialOpen}
+        content={TUTORIALS.signaler}
+        onDismiss={() => {
+          tutoSignaler.markSeen();
+          setSignalerTutorialOpen(false);
+          setReportOpen(true);
+        }}
+      />
     </div>
   );
 }
