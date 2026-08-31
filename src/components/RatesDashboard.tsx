@@ -26,7 +26,7 @@ export function RatesDashboard({
   const [sortBy, setSortBy] = useState<'recent' | 'best' | 'proximity'>('recent');
   const [photoOnly, setPhotoOnly] = useState(false);
 
-  const filtered = useMemo(() => {
+  const preFiltered = useMemo(() => {
     let list = [...bureaus];
 
     if (search.trim()) {
@@ -49,9 +49,16 @@ export function RatesDashboard({
       list = list.filter((b) => b.latest?.status === 'pending');
     }
 
-    if (photoOnly) {
-      list = list.filter((b) => !!b.logo_url);
-    }
+    return list;
+  }, [bureaus, search, municipality, rateFilter]);
+
+  const photoCount = useMemo(
+    () => preFiltered.filter((b) => Boolean(b.logo_url)).length,
+    [preFiltered]
+  );
+
+  const filtered = useMemo(() => {
+    const list = photoOnly ? preFiltered.filter((b) => Boolean(b.logo_url)) : [...preFiltered];
 
     switch (sortBy) {
       case 'best':
@@ -69,7 +76,7 @@ export function RatesDashboard({
     }
 
     return list;
-  }, [bureaus, search, municipality, rateFilter, sortBy, photoOnly]);
+  }, [preFiltered, sortBy, photoOnly]);
 
   const verifiedList = filtered.filter((b) => b.latest?.status === 'verified');
   const unverifiedList = filtered.filter((b) => b.latest?.status === 'pending');
@@ -156,7 +163,7 @@ export function RatesDashboard({
               }`}
             >
               <ImageIcon className="h-3.5 w-3.5" />
-              Avec photo
+              Avec photo ({photoCount})
             </button>
             <div className="inline-flex items-center gap-1.5">
               <Filter className="h-3.5 w-3.5 text-slate-400" />

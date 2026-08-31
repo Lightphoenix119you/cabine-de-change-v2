@@ -162,14 +162,14 @@ function AppContent() {
               />
               <StatCard
                 label="Taux vente moy."
-                value={stats.avgSell != null ? `${formatCDF(stats.avgSell)}` : '—'}
+                value={stats.avgSell != null ? formatCDF(stats.avgSell) : 'Aucun taux'}
                 sublabel="FC pour 1 USD"
                 icon={<TrendingUp className="h-5 w-5" />}
                 accent="success"
               />
               <StatCard
                 label="Taux achat moy."
-                value={stats.avgBuy != null ? `${formatCDF(stats.avgBuy)}` : '—'}
+                value={stats.avgBuy != null ? formatCDF(stats.avgBuy) : 'Aucun taux'}
                 sublabel="FC pour 1 USD"
                 icon={<TrendingDown className="h-5 w-5" />}
                 accent="accent"
